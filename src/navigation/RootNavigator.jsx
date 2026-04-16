@@ -16,10 +16,59 @@ import SettingsScreen from '../screens/SettingsmScreen';
 
 const Stack = createNativeStackNavigator();
 // <Stack.Screen name="Loading" component={LoadingScreen} />
+// libs
+import ReactNativeIdfaAaid, {
+  AdvertisingInfoResponse,
+} from '@sparkfabrik/react-native-idfa-aaid';
+
 export default function RootNavigator() {
   const [route, setRoute] = useState(false);
   console.log('route===>', route);
   const [isLoading, setIsLoading] = useState(false);
+  const [aceptTransperency, setAceptTransperency] = useState(false);
+
+  useEffect(() => {
+    fetchIdfa();
+  }, [])
+  
+  // IDFA / ATT status
+  const fetchIdfa = async () => {
+    try {
+      const res = await ReactNativeIdfaAaid.getAdvertisingInfo();
+
+      if (!res.isAdTrackingLimited) {
+        setIdfa(res.id);
+
+       // Settings.setAdvertiserTrackingEnabled(true);
+
+        //setTimeout(() => {
+          setAceptTransperency(true);
+        //}, 1500);
+        return true;
+      } else {
+        setIdfa('00000000-0000-0000-0000-000000000000');
+
+       // Settings.setAdvertiserTrackingEnabled(false);
+
+        //setTimeout(() => {
+          setAceptTransperency(true);
+        //}, 2500);
+        console.log('НЕ ЗГОДА!!!!!!!!!');
+
+        return false;
+      }
+    } catch (err) {
+      setIdfa(null);
+
+      //Settings.setAdvertiserTrackingEnabled(false);
+
+      setAceptTransperency(true);
+      console.log('Помилка отримання IDFA:', err);
+
+      return false;
+
+    }
+  };
 
   ///////// Route
   const Route = ({ isFatch }) => {
